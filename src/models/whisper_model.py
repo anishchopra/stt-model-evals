@@ -201,27 +201,31 @@ class WhisperModel(BaseASRModel):
         async def transcribe_endpoint(file: UploadFile = File(...)):
             # Save uploaded file to temp location
             suffix = Path(file.filename).suffix if file.filename else ".wav"
-            with tempfile.NamedTemporaryFile(suffix=suffix) as tmp:
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
                 content = await file.read()
                 tmp.write(content)
+                tmp.flush()
                 tmp_path = tmp.name
 
-                try:
-                    # Get audio duration
-                    audio_duration = self._get_audio_duration(tmp_path)
+            try:
+                # Get audio duration
+                audio_duration = self._get_audio_duration(tmp_path)
 
-                    # Transcribe
-                    start_time = time.perf_counter()
-                    text = self.transcribe(tmp_path)
-                    server_latency_ms = (time.perf_counter() - start_time) * 1000
+                # Transcribe
+                start_time = time.perf_counter()
+                text = self.transcribe(tmp_path)
+                server_latency_ms = (time.perf_counter() - start_time) * 1000
 
-                    return JSONResponse({
-                        "text": text,
-                        "audio_duration_s": audio_duration,
-                        "server_latency_ms": server_latency_ms,
-                    })
-                except Exception as e:
-                    raise HTTPException(status_code=500, detail=str(e))
+                return JSONResponse({
+                    "text": text,
+                    "audio_duration_s": audio_duration,
+                    "server_latency_ms": server_latency_ms,
+                })
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+            finally:
+                # Clean up temp file
+                os.unlink(tmp_path)
 
         print(f"Starting Whisper server on {host}:{port}")
         uvicorn.run(app, host=host, port=port)

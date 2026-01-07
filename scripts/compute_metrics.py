@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 from src.data_loader import load_eval_dataset
-from src.metrics import WERMetric
+from src.metrics import RTFMetric, WERMetric
 
 
 def parse_args():
@@ -113,6 +113,13 @@ def main():
     metrics_results["wer"] = wer_result.summary()
     print(f"  WER: {wer_result.details['wer']:.2%}")
 
+    # RTF (Real-Time Factor)
+    rtf_metric = RTFMetric()
+    rtf_result = rtf_metric.compute(predictions, references)
+    metrics_results["rtf"] = rtf_result.summary()
+    if rtf_result.details.get("num_samples", 0) > 0:
+        print(f"  RTF (mean): {rtf_result.details['mean']:.3f}")
+
     # Save aggregate metrics
     metrics_file = run_dir / "metrics.json"
     with open(metrics_file, "w") as f:
@@ -123,6 +130,7 @@ def main():
     per_sample_file = run_dir / "metrics_per_sample.json"
     per_sample_results = {
         "wer": wer_result.per_sample,
+        "rtf": rtf_result.per_sample,
     }
     with open(per_sample_file, "w") as f:
         json.dump(per_sample_results, f, indent=2)
@@ -137,6 +145,11 @@ def main():
     print(f"  Insertions: {wer_result.details['insertions']}")
     print(f"  Deletions: {wer_result.details['deletions']}")
     print(f"  Total reference words: {wer_result.details['total_ref_words']}")
+    if rtf_result.details.get("num_samples", 0) > 0:
+        print()
+        print(f"  RTF (mean): {rtf_result.details['mean']:.3f}")
+        print(f"  RTF (p50): {rtf_result.details['p50']:.3f}")
+        print(f"  RTF (p95): {rtf_result.details['p95']:.3f}")
 
     return 0
 

@@ -50,7 +50,7 @@ class BaseMetric(ABC):
         """Compute the metric over a dataset.
 
         Args:
-            predictions: List of prediction dicts with at least "id" and "prediction" keys.
+            predictions: List of prediction dicts with at least "id" and "text" keys.
                         May also contain "latency_ms", "audio_duration_s", etc.
             references: Dict mapping sample ID to reference dict containing at least
                        a "text" key. May include other ground truth data.

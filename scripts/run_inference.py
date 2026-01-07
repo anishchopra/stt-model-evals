@@ -171,7 +171,7 @@ def main():
 
                 record = {
                     "id": sample.id,
-                    "prediction": result.text,
+                    "text": result.text,
                     "latency_ms": result.latency_ms,
                     "audio_duration_s": result.audio_duration_s,
                 }

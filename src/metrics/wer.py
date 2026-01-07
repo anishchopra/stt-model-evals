@@ -57,7 +57,7 @@ class WERMetric(BaseMetric):
                 continue
 
             ref_text = references[sample_id]["text"]
-            hyp_text = pred["prediction"]
+            hyp_text = pred["text"]
 
             # Normalize for fair comparison
             ref_normalized = normalize_for_wer(
