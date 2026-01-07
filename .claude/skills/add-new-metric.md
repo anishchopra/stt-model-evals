@@ -12,9 +12,10 @@ This skill guides you through adding a new evaluation metric to the framework.
 
 Adding a new metric requires:
 1. Creating a metric class that extends `BaseMetric`
-2. Exporting the metric in `__init__.py`
-3. Integrating into `compute_metrics.py`
-4. Adding any required dependencies
+2. Adding to `METRIC_REGISTRY` in `src/metrics/__init__.py`
+3. Adding any required dependencies
+
+The `compute_metrics.py` script automatically picks up all registered metrics.
 
 ## Step 1: Create the Metric File
 
@@ -34,18 +35,9 @@ class <MetricName>Metric(BaseMetric):
     <Explain the formula or methodology if applicable>
     """
 
-    def __init__(
-        self,
-        # Add metric-specific configuration parameters
-        param1: str = "default",
-    ):
-        """Initialize metric.
-
-        Args:
-            param1: Description of parameter.
-        """
+    def __init__(self):
+        """Initialize metric."""
         super().__init__(name="<metric_name>")  # lowercase, used as key in output
-        self.param1 = param1
 
     def compute(
         self,
@@ -121,41 +113,37 @@ class <MetricName>Metric(BaseMetric):
         }
 ```
 
-## Step 2: Export the Metric
+## Step 2: Register the Metric
 
 Edit `src/metrics/__init__.py`:
 
 ```python
 from .base import BaseMetric, MetricResult
+from .rtf import RTFMetric
 from .wer import WERMetric
 from .<metric_name> import <MetricName>Metric  # Add import
 
+# Add to registry - this automatically includes it in compute_all_metrics()
+METRIC_REGISTRY: dict[str, type[BaseMetric]] = {
+    "wer": WERMetric,
+    "rtf": RTFMetric,
+    "<metric_name>": <MetricName>Metric,  # Add here
+}
+
 __all__ = [
     "BaseMetric",
+    "compute_all_metrics",
+    "METRIC_REGISTRY",
     "MetricResult",
+    "RTFMetric",
     "WERMetric",
     "<MetricName>Metric",  # Add to exports
 ]
 ```
 
-## Step 3: Integrate into compute_metrics.py
+That's it! The `compute_metrics.py` script uses `compute_all_metrics()` which automatically runs all registered metrics.
 
-Edit `scripts/compute_metrics.py` to use the new metric:
-
-```python
-from src.metrics import WERMetric, <MetricName>Metric
-
-# In main(), after WER computation:
-<metric_name>_metric = <MetricName>Metric()
-<metric_name>_result = <metric_name>_metric.compute(predictions, references)
-metrics_results["<metric_name>"] = <metric_name>_result.summary()
-print(f"  <MetricName>: {<metric_name>_result.details['mean']:.4f}")
-
-# Add to per_sample_results:
-per_sample_results["<metric_name>"] = <metric_name>_result.per_sample
-```
-
-## Step 4: Add Dependencies (if needed)
+## Step 3: Add Dependencies (if needed)
 
 ```bash
 uv add <required-package>
@@ -180,7 +168,7 @@ def _compute_single(self, hypothesis: str, reference: str) -> dict[str, Any]:
     return {"similarity": similarity}
 ```
 
-### Performance Metric (like Latency)
+### Performance Metric (like RTF)
 
 Uses fields from `predictions` only:
 
@@ -190,24 +178,20 @@ def compute(
     predictions: list[dict[str, Any]],
     references: dict[str, dict[str, Any]],
 ) -> MetricResult:
-    latencies = []
+    rtfs = []
     per_sample = {}
 
     for pred in predictions:
-        latency = pred.get("latency_ms")
-        if latency is not None:
-            latencies.append(latency)
-            per_sample[pred["id"]] = {"latency_ms": latency}
-
-    # Compute percentiles
-    latencies_sorted = sorted(latencies)
-    n = len(latencies_sorted)
+        latency_ms = pred.get("latency_ms")
+        audio_duration_s = pred.get("audio_duration_s")
+        if latency_ms and audio_duration_s:
+            rtf = (latency_ms / 1000) / audio_duration_s
+            rtfs.append(rtf)
+            per_sample[pred["id"]] = {"rtf": rtf}
 
     details = {
-        "mean_ms": sum(latencies) / n if n else 0,
-        "p50_ms": latencies_sorted[n // 2] if n else 0,
-        "p95_ms": latencies_sorted[int(n * 0.95)] if n else 0,
-        "num_samples": n,
+        "mean": sum(rtfs) / len(rtfs) if rtfs else 0,
+        "num_samples": len(rtfs),
     }
 
     return MetricResult(name=self.name, details=details, per_sample=per_sample)
@@ -237,7 +221,7 @@ Score (1-5):"""
 
 The `compute()` method must return a `MetricResult` with:
 
-- `name`: Metric identifier (e.g., "wer", "latency", "semantic_sim")
+- `name`: Metric identifier (e.g., "wer", "rtf", "semantic_sim")
 - `details`: Dict of aggregate statistics (structure is metric-specific)
 - `per_sample`: Dict mapping sample ID to per-sample results
 
@@ -252,8 +236,8 @@ Before considering the metric complete:
 - [ ] `compute()` returns `MetricResult` with `details` and `per_sample`
 - [ ] Handles missing samples gracefully (skip if ID not in references)
 - [ ] Handles empty input (return sensible defaults)
-- [ ] Exported in `src/metrics/__init__.py`
-- [ ] Integrated into `scripts/compute_metrics.py`
+- [ ] Added to `METRIC_REGISTRY` in `src/metrics/__init__.py`
+- [ ] Exported in `__all__` in `src/metrics/__init__.py`
 - [ ] Dependencies added via `uv add`
 
 ## Testing the New Metric
@@ -280,6 +264,6 @@ print('Per-sample:', result.per_sample)
 ```
 
 ```bash
-# Full integration test
+# Full integration test - new metric is automatically included
 uv run python -m scripts.compute_metrics --run-name <existing-run>
 ```

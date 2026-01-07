@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 from src.data_loader import load_eval_dataset
-from src.metrics import RTFMetric, WERMetric
+from src.metrics import compute_all_metrics
 
 
 def parse_args():
@@ -60,11 +60,7 @@ def load_metadata(run_dir: Path) -> dict:
 
 
 def build_references(dataset) -> dict[str, dict]:
-    """Build references dict from dataset.
-
-    Returns:
-        Dict mapping sample ID to {"text": ..., "emotion": ..., ...}
-    """
+    """Build references dict from dataset."""
     references = {}
     for sample in dataset:
         references[sample.id] = {
@@ -103,53 +99,38 @@ def main():
     references = build_references(dataset)
     print(f"  References loaded: {len(references)}")
 
-    # Compute metrics
+    # Compute all metrics
     print("\nComputing metrics...")
-    metrics_results = {}
+    results = compute_all_metrics(predictions, references)
 
-    # WER
-    wer_metric = WERMetric()
-    wer_result = wer_metric.compute(predictions, references)
-    metrics_results["wer"] = wer_result.summary()
-    print(f"  WER: {wer_result.details['wer']:.2%}")
-
-    # RTF (Real-Time Factor)
-    rtf_metric = RTFMetric()
-    rtf_result = rtf_metric.compute(predictions, references)
-    metrics_results["rtf"] = rtf_result.summary()
-    if rtf_result.details.get("num_samples", 0) > 0:
-        print(f"  RTF (mean): {rtf_result.details['mean']:.3f}")
+    # Build output dicts
+    metrics_summary = {name: result.summary() for name, result in results.items()}
+    metrics_per_sample = {name: result.per_sample for name, result in results.items()}
 
     # Save aggregate metrics
     metrics_file = run_dir / "metrics.json"
     with open(metrics_file, "w") as f:
-        json.dump(metrics_results, f, indent=2)
+        json.dump(metrics_summary, f, indent=2)
     print(f"\nSaved: {metrics_file}")
 
     # Save per-sample metrics
     per_sample_file = run_dir / "metrics_per_sample.json"
-    per_sample_results = {
-        "wer": wer_result.per_sample,
-        "rtf": rtf_result.per_sample,
-    }
     with open(per_sample_file, "w") as f:
-        json.dump(per_sample_results, f, indent=2)
+        json.dump(metrics_per_sample, f, indent=2)
     print(f"Saved: {per_sample_file}")
 
     # Print summary
     print(f"\n{'='*50}")
     print("Metrics Summary")
     print(f"{'='*50}")
-    print(f"  WER: {wer_result.details['wer']:.2%}")
-    print(f"  Substitutions: {wer_result.details['substitutions']}")
-    print(f"  Insertions: {wer_result.details['insertions']}")
-    print(f"  Deletions: {wer_result.details['deletions']}")
-    print(f"  Total reference words: {wer_result.details['total_ref_words']}")
-    if rtf_result.details.get("num_samples", 0) > 0:
-        print()
-        print(f"  RTF (mean): {rtf_result.details['mean']:.3f}")
-        print(f"  RTF (p50): {rtf_result.details['p50']:.3f}")
-        print(f"  RTF (p95): {rtf_result.details['p95']:.3f}")
+
+    for name, result in results.items():
+        print(f"\n  [{name.upper()}]")
+        for key, value in result.details.items():
+            if isinstance(value, float):
+                print(f"    {key}: {value:.4f}")
+            else:
+                print(f"    {key}: {value}")
 
     return 0
 
