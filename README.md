@@ -14,7 +14,6 @@ This framework provides:
 
 - Python 3.12+
 - CUDA-capable GPU (tested on A100)
-- [uv](https://docs.astral.sh/uv/) package manager
 
 ## Installation
 
@@ -23,8 +22,8 @@ This framework provides:
 git clone <repo-url>
 cd stt-model-evals
 
-# Install dependencies with uv
-uv sync
+# Install dependencies with pip
+pip install -r requirements.txt
 ```
 
 ## Project Structure
@@ -82,10 +81,10 @@ Start an inference server for your chosen model:
 
 ```bash
 # Start Whisper server (default: base model, port 8000)
-uv run python -m scripts.serve_model --model whisper
+python -m scripts.serve_model --model whisper
 
 # With custom options
-uv run python -m scripts.serve_model \
+python -m scripts.serve_model \
     --model whisper \
     --model-name large-v3 \
     --port 8001 \
@@ -108,10 +107,10 @@ In a separate terminal, run inference on the dataset:
 
 ```bash
 # Basic usage (creates outputs/whisper/)
-uv run python -m scripts.run_inference --model whisper
+python -m scripts.run_inference --model whisper
 
 # With custom run name and options
-uv run python -m scripts.run_inference \
+python -m scripts.run_inference \
     --model whisper \
     --run-name whisper-large-v3 \
     --port 8000 \
@@ -134,7 +133,7 @@ Output files:
 After inference completes, compute metrics:
 
 ```bash
-uv run python -m scripts.compute_metrics --run-name whisper
+python -m scripts.compute_metrics --run-name whisper
 ```
 
 This generates:
@@ -164,11 +163,11 @@ To add a new metric, see `.claude/skills/add-new-metric.md`.
 
 ```bash
 # Terminal 1: Start server
-uv run python -m scripts.serve_model --model whisper --model-name base
+python -m scripts.serve_model --model whisper --model-name base
 
 # Terminal 2: Run evaluation
-uv run python -m scripts.run_inference --model whisper --run-name whisper-base
-uv run python -m scripts.compute_metrics --run-name whisper-base
+python -m scripts.run_inference --model whisper --run-name whisper-base
+python -m scripts.compute_metrics --run-name whisper-base
 
 # View results
 cat outputs/whisper-base/metrics.json

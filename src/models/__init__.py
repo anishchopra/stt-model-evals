@@ -2,12 +2,13 @@
 
 from .base import BaseASRModel, ASRClient, TranscriptionResult
 from .whisper_model import WhisperModel, WhisperClient
+from .parakeet_model import ParakeetModel, ParakeetClient
 
 
 # Registry of available models
 MODEL_REGISTRY: dict[str, type[BaseASRModel]] = {
     "whisper": WhisperModel,
-    # "parakeet": ParakeetModel,  # TODO: add later
+    "parakeet": ParakeetModel,
 }
 
 # Default configurations for each model
@@ -18,6 +19,10 @@ MODEL_DEFAULTS: dict[str, dict] = {
         "compute_type": "float16",
         "language": "en",
         "beam_size": 5,
+    },
+    "parakeet": {
+        "model_name": "nvidia/parakeet-ctc-1.1b",
+        "device": "cuda",
     },
 }
 
@@ -41,6 +46,8 @@ __all__ = [
     "TranscriptionResult",
     "WhisperModel",
     "WhisperClient",
+    "ParakeetModel",
+    "ParakeetClient",
     "MODEL_REGISTRY",
     "MODEL_DEFAULTS",
     "get_model_class",

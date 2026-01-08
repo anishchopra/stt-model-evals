@@ -2,13 +2,54 @@
 """Start an ASR inference server for a specified model.
 
 Usage:
-    uv run python -m scripts.serve_model --model whisper --port 8000
-    uv run python -m scripts.serve_model --model whisper --model-size large-v3 --port 8000
+    python -m scripts.serve_model --model whisper --port 8000
+    python -m scripts.serve_model --model whisper --model-size large-v3 --port 8000
+    python -m scripts.serve_model --model whisper --param compute_type=float16
 """
 
 import argparse
 
 from src.models import MODEL_REGISTRY, get_model_class, get_model_defaults
+
+
+def parse_param(param: str) -> tuple[str, str | int | float | bool]:
+    """Parse a key=value parameter string into a tuple.
+
+    Attempts to convert value to appropriate type (int, float, bool, or str).
+    """
+    if "=" not in param:
+        raise argparse.ArgumentTypeError(
+            f"Invalid parameter format: '{param}'. Expected key=value"
+        )
+
+    key, value = param.split("=", 1)
+    key = key.strip()
+    value = value.strip()
+
+    if not key:
+        raise argparse.ArgumentTypeError(f"Empty key in parameter: '{param}'")
+
+    # Try to convert value to appropriate type
+    # Check for boolean
+    if value.lower() in ("true", "yes", "1"):
+        return key, True
+    if value.lower() in ("false", "no", "0"):
+        return key, False
+
+    # Try int
+    try:
+        return key, int(value)
+    except ValueError:
+        pass
+
+    # Try float
+    try:
+        return key, float(value)
+    except ValueError:
+        pass
+
+    # Keep as string
+    return key, value
 
 
 def parse_args():
@@ -18,13 +59,19 @@ def parse_args():
         epilog="""
 Examples:
     # Start Whisper server with default settings (base model)
-    uv run python scripts/serve_model.py --model whisper
+    python -m scripts.serve_model --model whisper
 
     # Start Whisper server with large-v3 model
-    uv run python scripts/serve_model.py --model whisper --model-size large-v3
+    python -m scripts.serve_model --model whisper --model-size large-v3
 
-    # Start on specific port
-    uv run python scripts/serve_model.py --model whisper --port 8001
+    # Start Whisper with custom compute type
+    python -m scripts.serve_model --model whisper --param compute_type=int8
+
+    # Start Parakeet server
+    python -m scripts.serve_model --model parakeet
+
+    # Multiple model-specific params
+    python -m scripts.serve_model --model whisper --param beam_size=10 --param language=en
         """,
     )
 
@@ -39,7 +86,7 @@ Examples:
         "--model-size",
         type=str,
         default=None,
-        help="Model size/variant (e.g., 'base', 'small', 'large-v3' for Whisper)",
+        help="Model size/variant (e.g., 'base', 'large-v3' for Whisper, 'nvidia/parakeet-ctc-1.1b' for Parakeet)",
     )
     parser.add_argument(
         "--host",
@@ -56,16 +103,18 @@ Examples:
     parser.add_argument(
         "--device",
         type=str,
-        default="cuda",
+        default=None,
         choices=["cuda", "cpu"],
-        help="Device to run on (default: cuda)",
+        help="Device to run on (default: from model defaults)",
     )
     parser.add_argument(
-        "--compute-type",
-        type=str,
-        default="float16",
-        choices=["float16", "int8", "int8_float16", "float32"],
-        help="Compute type for inference (default: float16)",
+        "--param",
+        type=parse_param,
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Model-specific parameter (can be used multiple times). "
+             "E.g., --param compute_type=float16 --param beam_size=5",
     )
 
     return parser.parse_args()
@@ -83,8 +132,10 @@ def main():
         model_kwargs["model_name"] = args.model_size
     if args.device:
         model_kwargs["device"] = args.device
-    if args.compute_type:
-        model_kwargs["compute_type"] = args.compute_type
+
+    # Apply model-specific params from --param arguments
+    for key, value in args.param:
+        model_kwargs[key] = value
 
     print(f"Initializing {args.model} model with config:")
     for k, v in model_kwargs.items():

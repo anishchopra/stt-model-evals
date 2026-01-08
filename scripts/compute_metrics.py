@@ -2,8 +2,8 @@
 """Compute evaluation metrics for a completed inference run.
 
 Usage:
-    uv run python -m scripts.compute_metrics --run-name whisper
-    uv run python -m scripts.compute_metrics --run-name whisper --output-dir outputs
+    python -m scripts.compute_metrics --run-name whisper
+    python -m scripts.compute_metrics --run-name whisper --output-dir outputs
 """
 
 import argparse

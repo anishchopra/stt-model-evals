@@ -1,0 +1,12 @@
+torch
+nemo_toolkit[asr]
+numpy
+requests
+transformers
+torchcodec
+fastapi
+faster-whisper
+pandas
+python-multipart
+tqdm
+uvicorn

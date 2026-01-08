@@ -10,12 +10,12 @@ STT Model Evals is a Speech-to-Text model evaluation framework for benchmarking 
 
 ```bash
 # Always use uv for running Python
-uv run python -m scripts.serve_model --model whisper --port 8000
-uv run python -m scripts.run_inference --model whisper --port 8000 --limit 10
-uv run python -m scripts.compute_metrics --run-name <run-name>
+python -m scripts.serve_model --model whisper --port 8000
+python -m scripts.run_inference --model whisper --port 8000 --limit 10
+python -m scripts.compute_metrics --run-name <run-name>
 
 # Add dependencies
-uv add <package-name>
+pip install <package-name>
 ```
 
 ## Architecture
@@ -49,7 +49,7 @@ Reference transcripts contain `**emphasis**` markers and `[paralinguistic]` tags
 
 ## Conventions
 
-- Run scripts as modules: `uv run python -m scripts.<name>` (not `python scripts/<name>.py`)
+- Run scripts as modules: `python -m scripts.<name>` (not `python scripts/<name>.py`)
 - Never edit `pyproject.toml` directly - use `uv add`
 - Run names auto-increment if directory exists (whisper, whisper0, whisper1, ...)
 - `--run-name` is optional for inference (defaults to model name), required for metrics

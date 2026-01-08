@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 import time
-import torchaudio
+from torchcodec.decoders import AudioDecoder
 
 
 @dataclass
@@ -137,11 +137,9 @@ class BaseASRModel(ABC):
 
     def _get_audio_duration(self, audio_path: str) -> Optional[float]:
         """Get audio duration in seconds."""
-        try:
-            info = torchaudio.info(audio_path)
-            return info.num_frames / info.sample_rate
-        except Exception:
-            return None
+        decoder = AudioDecoder(audio_path)
+        metadata = decoder.metadata
+        return metadata.duration_seconds
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(model_name='{self.model_name}', device='{self.device}')"

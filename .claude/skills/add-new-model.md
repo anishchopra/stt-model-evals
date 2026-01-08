@@ -222,7 +222,7 @@ __all__ = [
 ## Step 3: Add Dependencies
 
 ```bash
-uv add <required-package>
+pip install <required-package>
 ```
 
 Common ASR dependencies:
@@ -244,13 +244,12 @@ Before considering the model complete:
 - [ ] Model registered in `MODEL_REGISTRY`
 - [ ] Default config added to `MODEL_DEFAULTS`
 - [ ] Classes exported in `__all__`
-- [ ] Dependencies added via `uv add`
 
 ## Testing the New Model
 
 ```bash
 # Terminal 1: Start server
-uv run python -m scripts.serve_model --model <model_name> --port 8000
+python -m scripts.serve_model --model <model_name> --port 8000
 
 # Terminal 2: Test health
 curl http://localhost:8000/health
@@ -259,7 +258,7 @@ curl http://localhost:8000/health
 curl -X POST http://localhost:8000/transcribe -F "file=@data/eval_10h/sample.wav"
 
 # Terminal 2: Run inference
-uv run python -m scripts.run_inference --model <model_name> --port 8000 --limit 5
+python -m scripts.run_inference --model <model_name> --port 8000 --limit 5
 ```
 
 ## Notes on vLLM Integration

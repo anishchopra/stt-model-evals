@@ -3,13 +3,13 @@
 
 Usage:
     # First start the server in another terminal:
-    uv run -m python scripts.serve_model --model whisper --port 8000
+    python -m scripts.serve_model --model whisper --port 8000
 
     # Then run inference:
-    uv run -m python scripts.run_inference --model whisper --port 8000
+    python -m scripts.run_inference --model whisper --port 8000
 
     # Run on subset for testing:
-    uv run -m python scripts.run_inference --model whisper --port 8000 --limit 10
+    python -m scripts.run_inference --model whisper --port 8000 --limit 10
 """
 
 import argparse
@@ -149,7 +149,7 @@ def main():
     print(f"\nConnecting to server at {args.host}:{args.port}")
     if not client.health_check():
         print("ERROR: Server is not healthy. Make sure it's running:")
-        print(f"  uv run python scripts/serve_model.py --model {args.model} --port {args.port}")
+        print(f"  python scripts/serve_model.py --model {args.model} --port {args.port}")
         sys.exit(1)
     print("  Server is healthy!")
 

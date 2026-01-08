@@ -238,13 +238,12 @@ Before considering the metric complete:
 - [ ] Handles empty input (return sensible defaults)
 - [ ] Added to `METRIC_REGISTRY` in `src/metrics/__init__.py`
 - [ ] Exported in `__all__` in `src/metrics/__init__.py`
-- [ ] Dependencies added via `uv add`
 
 ## Testing the New Metric
 
 ```python
 # Quick test
-uv run python -c "
+python -c "
 from src.metrics import <MetricName>Metric
 
 predictions = [
@@ -265,5 +264,5 @@ print('Per-sample:', result.per_sample)
 
 ```bash
 # Full integration test - new metric is automatically included
-uv run python -m scripts.compute_metrics --run-name <existing-run>
+python -m scripts.compute_metrics --run-name <existing-run>
 ```
