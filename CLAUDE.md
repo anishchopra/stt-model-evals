@@ -9,10 +9,10 @@ STT Model Evals is a Speech-to-Text model evaluation framework for benchmarking 
 ## Key Commands
 
 ```bash
-# Always use uv for running Python
 python -m scripts.serve_model --model whisper --port 8000
 python -m scripts.run_inference --model whisper --port 8000 --limit 10
 python -m scripts.compute_metrics --run-name <run-name>
+python -m scripts.generate_report --runs outputs/run1 outputs/run2
 
 # Add dependencies
 pip install <package-name>
@@ -34,6 +34,7 @@ pip install <package-name>
 1. `serve_model.py` starts HTTP server for a model
 2. `run_inference.py` sends audio files to server, saves predictions to `outputs/<run-name>/`
 3. `compute_metrics.py` loads predictions + references, computes metrics, saves to same directory
+4. `generate_report.py` compares metrics across multiple runs, saves charts to `reports/<report-name>/`
 
 ### Output Structure
 ```
@@ -42,6 +43,11 @@ outputs/<run-name>/
 ├── metadata.json          # run config, dataset info, timestamps
 ├── metrics.json           # aggregate metrics
 └── metrics_per_sample.json
+
+reports/<report-name>/
+├── wer_comparison.png     # WER bar chart across runs
+├── rtf_comparison.png     # RTF bar chart across runs
+└── summary.csv            # tabular summary of all runs
 ```
 
 ### Text Normalization (`src/text_normalizer.py`)

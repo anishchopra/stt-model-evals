@@ -49,14 +49,21 @@ stt-model-evals/
 ├── scripts/
 │   ├── serve_model.py         # Start inference server
 │   ├── run_inference.py       # Run inference on dataset
-│   └── compute_metrics.py     # Calculate metrics on predictions
+│   ├── compute_metrics.py     # Calculate metrics on predictions
+│   └── generate_report.py     # Generate comparison reports
 │
-└── outputs/                   # Evaluation results (auto-created)
-    └── <run-name>/
-        ├── metadata.json
-        ├── predictions.jsonl
-        ├── metrics.json
-        └── metrics_per_sample.json
+├── outputs/                   # Evaluation results (auto-created)
+│   └── <run-name>/
+│       ├── metadata.json
+│       ├── predictions.jsonl
+│       ├── metrics.json
+│       └── metrics_per_sample.json
+│
+└── reports/                   # Comparison reports (auto-created)
+    └── <report-name>/
+        ├── wer_comparison.png
+        ├── rtf_comparison.png
+        └── summary.csv
 ```
 
 ## Data Format
@@ -140,6 +147,28 @@ This generates:
 - `outputs/<run-name>/metrics.json` - Aggregate metrics
 - `outputs/<run-name>/metrics_per_sample.json` - Per-sample metrics
 
+### Step 4: Generate Comparison Reports (Optional)
+
+Compare metrics across multiple runs:
+
+```bash
+# Compare two or more runs
+python -m scripts.generate_report --runs outputs/whisper outputs/parakeet
+
+# With custom report name
+python -m scripts.generate_report --runs outputs/whisper outputs/parakeet --report-name whisper-vs-parakeet
+```
+
+Report options:
+- `--runs` - Paths to run directories (required, space-separated)
+- `--report-name` - Report directory name (default: auto-generated timestamp)
+- `--reports-dir` - Base reports directory (default: reports)
+
+This generates:
+- `reports/<report-name>/wer_comparison.png` - WER bar chart
+- `reports/<report-name>/rtf_comparison.png` - RTF bar chart
+- `reports/<report-name>/summary.csv` - Tabular summary of all runs
+
 ## Available Models
 
 | Model | Registry Key | Backend | Notes |
@@ -171,6 +200,9 @@ python -m scripts.compute_metrics --run-name whisper-base
 
 # View results
 cat outputs/whisper-base/metrics.json
+
+# Compare multiple runs (after running evaluations for different models)
+python -m scripts.generate_report --runs outputs/whisper-base outputs/parakeet-base
 ```
 
 ## Output Format
