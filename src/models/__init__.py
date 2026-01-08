@@ -3,12 +3,14 @@
 from .base import BaseASRModel, ASRClient, TranscriptionResult
 from .whisper_model import WhisperModel, WhisperClient
 from .parakeet_model import ParakeetModel, ParakeetClient
+from .qwen_omni_model import QwenOmniModel, QwenOmniClient
 
 
 # Registry of available models
 MODEL_REGISTRY: dict[str, type[BaseASRModel]] = {
     "whisper": WhisperModel,
     "parakeet": ParakeetModel,
+    "qwen-omni": QwenOmniModel,
 }
 
 # Default configurations for each model
@@ -23,6 +25,12 @@ MODEL_DEFAULTS: dict[str, dict] = {
     "parakeet": {
         "model_name": "nvidia/parakeet-ctc-1.1b",
         "device": "cuda",
+    },
+    "qwen-omni": {
+        "model_name": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+        "device": "cuda",
+        "torch_dtype": "bfloat16",
+        "use_flash_attention": True,
     },
 }
 
@@ -48,6 +56,8 @@ __all__ = [
     "WhisperClient",
     "ParakeetModel",
     "ParakeetClient",
+    "QwenOmniModel",
+    "QwenOmniClient",
     "MODEL_REGISTRY",
     "MODEL_DEFAULTS",
     "get_model_class",

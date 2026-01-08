@@ -174,6 +174,7 @@ This generates:
 | Model | Registry Key | Backend | Notes |
 |-------|-------------|---------|-------|
 | Whisper | `whisper` | FastAPI + faster-whisper | Supports all Whisper sizes |
+| Qwen3 Omni | `qwen-omni` | FastAPI + transformers | Qwen3-Omni multimodal MoE model |
 
 To add a new model, see `.claude/skills/add-new-model.md`.
 

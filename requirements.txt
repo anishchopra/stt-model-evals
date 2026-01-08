@@ -2,7 +2,8 @@ torch
 nemo_toolkit[asr]
 numpy
 requests
-transformers
+git+https://github.com/huggingface/transformers
+accelerate
 torchcodec
 fastapi
 faster-whisper
@@ -15,3 +16,4 @@ jiwer
 python-dotenv
 openai
 tenacity
+huggingface_hub
