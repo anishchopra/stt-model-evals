@@ -199,7 +199,7 @@ That's it! The `compute_metrics.py` script uses `compute_all_metrics()` which au
 ## Step 3: Add Dependencies (if needed)
 
 ```bash
-uv add <required-package>
+pip install <required-package>
 ```
 
 Common metric dependencies:
@@ -208,6 +208,20 @@ Common metric dependencies:
 - `sentence-transformers` - Semantic similarity
 - `numpy` - Statistical computations
 - `openai` or `anthropic` - LLM-as-judge
+
+## Step 4: Update the README
+
+Add the new metric to the "Available Metrics" table in `README.md`:
+
+```markdown
+## Available Metrics
+
+| Metric | Description |
+|--------|-------------|
+| WER | Word Error Rate (using jiwer) |
+| RTF | Real-Time Factor with percentiles (p50, p90, p95, p99) |
+| <MetricName> | <Brief description of what this metric measures> |
+```
 
 ## Metric Type Examples
 
@@ -293,6 +307,7 @@ Before considering the metric complete:
 - [ ] Handles empty input (return sensible defaults)
 - [ ] Added to `METRIC_REGISTRY` in `src/metrics/__init__.py`
 - [ ] Exported in `__all__` in `src/metrics/__init__.py`
+- [ ] Added to "Available Metrics" table in `README.md`
 
 ## Testing the New Metric
 

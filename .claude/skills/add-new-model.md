@@ -230,6 +230,20 @@ Common ASR dependencies:
 - `nemo_toolkit[asr]` - NVIDIA NeMo models (Parakeet)
 - `transformers` - Hugging Face models
 
+## Step 4: Update the README
+
+Add the new model to the "Available Models" table in `README.md`:
+
+```markdown
+## Available Models
+
+| Model | Registry Key | Backend | Notes |
+|-------|-------------|---------|-------|
+| Whisper | `whisper` | FastAPI + faster-whisper | Supports all Whisper sizes |
+| Parakeet | `parakeet` | FastAPI + NeMo | NVIDIA NeMo ASR models |
+| <ModelName> | `<model_name>` | FastAPI + <backend> | <Brief description> |
+```
+
 ## Checklist
 
 Before considering the model complete:
@@ -244,6 +258,7 @@ Before considering the model complete:
 - [ ] Model registered in `MODEL_REGISTRY`
 - [ ] Default config added to `MODEL_DEFAULTS`
 - [ ] Classes exported in `__all__`
+- [ ] Added to "Available Models" table in `README.md`
 
 ## Testing the New Model
 
