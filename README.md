@@ -183,8 +183,11 @@ To add a new model, see `.claude/skills/add-new-model.md`.
 |--------|-------------|
 | WER | Word Error Rate (using jiwer) |
 | RTF | Real-Time Factor with percentiles (p50, p90, p95, p99) |
+| LLM Judge | Semantic equivalence scoring (1-5) using GPT-5-mini |
 
 **RTF (Real-Time Factor)** = processing_time / audio_duration. RTF < 1 means faster than real-time.
+
+**LLM Judge** uses GPT-5-mini to rate how well transcriptions preserve meaning (1=nonsense, 5=same meaning). Requires `OPENAI_API_KEY` environment variable.
 
 To add a new metric, see `.claude/skills/add-new-metric.md`.
 

@@ -11,5 +11,6 @@ wheels/
 
 data/
 outputs/
+reports/
 .claude/settings.local.json
 .env

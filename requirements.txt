@@ -13,3 +13,5 @@ uvicorn
 matplotlib
 jiwer
 python-dotenv
+openai
+tenacity
