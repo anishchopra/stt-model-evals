@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-01-08T00:54:34.605594",
+  "num_runs": 2,
+  "runs": [
+    {
+      "name": "whisper2",
+      "path": "outputs/whisper2",
+      "model": "whisper",
+      "dataset": "eval_10h",
+      "timestamp": "2026-01-07T22:06:59.611236",
+      "metrics": {
+        "wer": 0.031932773109243695,
+        "wer_pct": 3.1932773109243695,
+        "rtf_mean": 0.018102999679063488,
+        "rtf_p50": 0.018468028350599863,
+        "rtf_p95": 0.021522868377448708
+      }
+    },
+    {
+      "name": "parakeet2",
+      "path": "outputs/parakeet2",
+      "model": "parakeet",
+      "dataset": "eval_10h",
+      "timestamp": "2026-01-07T23:46:25.785635",
+      "metrics": {
+        "wer": 0.030303030303030304,
+        "wer_pct": 3.0303030303030303,
+        "rtf_mean": 0.021855826853683816,
+        "rtf_p50": 0.037333086014352646,
+        "rtf_p95": 0.037333086014352646
+      }
+    }
+  ]
+}

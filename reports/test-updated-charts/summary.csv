@@ -1,0 +1,3 @@
+name,model,dataset,timestamp,wer,wer_pct,rtf_mean,rtf_p50,rtf_p95,num_samples
+whisper2,whisper,eval_10h,2026-01-07T22:06:59.611236,0.031933,3.19,0.018103,0.018468,0.021523,10
+parakeet2,parakeet,eval_10h,2026-01-07T23:46:25.785635,0.030303,3.03,0.021856,0.037333,0.037333,2

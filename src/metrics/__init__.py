@@ -1,5 +1,6 @@
 """Metrics for ASR evaluation."""
 
+from pathlib import Path
 from typing import Any
 
 from .base import BaseMetric, MetricResult
@@ -34,9 +35,33 @@ def compute_all_metrics(
     return results
 
 
+def generate_all_charts(
+    runs_data: list[dict[str, Any]],
+    output_dir: Path,
+) -> list[str]:
+    """Generate comparison charts for all registered metrics.
+
+    Args:
+        runs_data: List of run data dicts, each containing:
+            - "name": Run name (str)
+            - "metrics": Dict of metric results from metrics.json
+        output_dir: Directory to save chart images.
+
+    Returns:
+        List of generated chart filenames.
+    """
+    generated = []
+    for name, metric_class in METRIC_REGISTRY.items():
+        output_path = output_dir / f"{name}_comparison.png"
+        if metric_class.create_comparison_chart(runs_data, output_path):
+            generated.append(output_path.name)
+    return generated
+
+
 __all__ = [
     "BaseMetric",
     "compute_all_metrics",
+    "generate_all_charts",
     "METRIC_REGISTRY",
     "MetricResult",
     "RTFMetric",

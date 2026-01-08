@@ -1,6 +1,9 @@
 """Real-Time Factor (RTF) metric implementation."""
 
+from pathlib import Path
 from typing import Any
+
+import matplotlib.pyplot as plt
 
 from .base import BaseMetric, MetricResult
 
@@ -89,3 +92,55 @@ class RTFMetric(BaseMetric):
         idx = int(n * p)
         idx = min(idx, n - 1)
         return sorted_values[idx]
+
+    @staticmethod
+    def create_comparison_chart(
+        runs_data: list[dict[str, Any]],
+        output_path: Path,
+    ) -> bool:
+        """Generate RTF comparison bar chart.
+
+        Args:
+            runs_data: List of run data dicts with "name" and "metrics" keys.
+            output_path: Path to save the chart image.
+
+        Returns:
+            True if chart was created, False if not enough data.
+        """
+        # Extract RTF data from runs
+        names = []
+        rtf_values = []
+
+        for run in runs_data:
+            if "rtf" in run["metrics"] and "mean" in run["metrics"]["rtf"]:
+                names.append(run["name"])
+                rtf_values.append(run["metrics"]["rtf"]["mean"])
+
+        if not names:
+            return False
+
+        # Create chart
+        fig, ax = plt.subplots(figsize=(10, 6))
+        bars = ax.bar(names, rtf_values, color="darkorange", edgecolor="black")
+
+        # Add value labels on bars
+        for bar, val in zip(bars, rtf_values):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.001,
+                f"{val:.3f}",
+                ha="center",
+                va="bottom",
+                fontsize=10,
+            )
+
+        ax.set_xlabel("Model Run")
+        ax.set_ylabel("Real-Time Factor (lower is better)")
+        ax.set_title("RTF Comparison Across Runs")
+        ax.set_ylim(0, max(rtf_values) * 1.15)
+
+        plt.tight_layout()
+        plt.savefig(output_path, dpi=150, bbox_inches="tight")
+        plt.close()
+
+        return True

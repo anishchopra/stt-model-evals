@@ -10,3 +10,5 @@ pandas
 python-multipart
 tqdm
 uvicorn
+matplotlib
+jiwer

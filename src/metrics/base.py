@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 
@@ -59,6 +60,24 @@ class BaseMetric(ABC):
             MetricResult with aggregate details and per-sample results.
         """
         pass
+
+    @staticmethod
+    def create_comparison_chart(
+        runs_data: list[dict[str, Any]],
+        output_path: Path,
+    ) -> bool:
+        """Generate a comparison chart for this metric across multiple runs.
+
+        Args:
+            runs_data: List of run data dicts, each containing:
+                - "name": Run name (str)
+                - "metrics": Dict of metric results from metrics.json
+            output_path: Path to save the chart image.
+
+        Returns:
+            True if chart was created, False if not enough data.
+        """
+        raise NotImplementedError("Subclasses should implement create_comparison_chart")
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name='{self.name}')"
