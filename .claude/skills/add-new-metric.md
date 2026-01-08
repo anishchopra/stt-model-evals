@@ -12,10 +12,11 @@ This skill guides you through adding a new evaluation metric to the framework.
 
 Adding a new metric requires:
 1. Creating a metric class that extends `BaseMetric`
-2. Adding to `METRIC_REGISTRY` in `src/metrics/__init__.py`
-3. Adding any required dependencies
+2. Implementing `create_comparison_chart()` for report generation
+3. Adding to `METRIC_REGISTRY` in `src/metrics/__init__.py`
+4. Adding any required dependencies
 
-The `compute_metrics.py` script automatically picks up all registered metrics.
+The `compute_metrics.py` script automatically picks up all registered metrics, and `generate_report.py` automatically generates comparison charts for each metric.
 
 ## Step 1: Create the Metric File
 
@@ -24,7 +25,10 @@ Create `src/metrics/<metric_name>.py`:
 ```python
 """<MetricName> metric implementation."""
 
+from pathlib import Path
 from typing import Any
+
+import matplotlib.pyplot as plt
 
 from .base import BaseMetric, MetricResult
 
@@ -111,6 +115,54 @@ class <MetricName>Metric(BaseMetric):
             "max": max(scores),
             "num_samples": len(scores),
         }
+
+    @staticmethod
+    def create_comparison_chart(
+        runs_data: list[dict[str, Any]],
+        output_path: Path,
+    ) -> bool:
+        """Generate comparison chart for this metric across runs.
+
+        Args:
+            runs_data: List of run data dicts, each containing:
+                - "name": Run name (str)
+                - "metrics": Dict of metric results from metrics.json
+            output_path: Path to save the chart image.
+
+        Returns:
+            True if chart was created, False if not enough data.
+        """
+        # Extract metric data from runs
+        names = []
+        values = []
+
+        for run in runs_data:
+            if "<metric_name>" in run["metrics"]:
+                names.append(run["name"])
+                values.append(run["metrics"]["<metric_name>"]["mean"])
+
+        if not names:
+            return False
+
+        # Create bar chart
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.bar(names, values, color="steelblue", edgecolor="black")
+
+        # Add value labels on bars
+        for i, (name, val) in enumerate(zip(names, values)):
+            ax.text(i, val + max(values) * 0.01, f"{val:.3f}",
+                    ha="center", va="bottom", fontsize=10)
+
+        ax.set_xlabel("Model Run")
+        ax.set_ylabel("<Metric Name>")
+        ax.set_title("<Metric Name> Comparison Across Runs")
+        ax.set_ylim(0, max(values) * 1.15)
+
+        plt.tight_layout()
+        plt.savefig(output_path, dpi=150, bbox_inches="tight")
+        plt.close()
+
+        return True
 ```
 
 ## Step 2: Register the Metric
@@ -133,6 +185,7 @@ METRIC_REGISTRY: dict[str, type[BaseMetric]] = {
 __all__ = [
     "BaseMetric",
     "compute_all_metrics",
+    "generate_all_charts",
     "METRIC_REGISTRY",
     "MetricResult",
     "RTFMetric",
@@ -141,7 +194,7 @@ __all__ = [
 ]
 ```
 
-That's it! The `compute_metrics.py` script uses `compute_all_metrics()` which automatically runs all registered metrics.
+That's it! The `compute_metrics.py` script uses `compute_all_metrics()` which automatically runs all registered metrics, and `generate_report.py` uses `generate_all_charts()` which automatically creates comparison charts for each metric.
 
 ## Step 3: Add Dependencies (if needed)
 
@@ -150,6 +203,7 @@ uv add <required-package>
 ```
 
 Common metric dependencies:
+- `matplotlib` - Chart generation (already installed)
 - `jiwer` - WER, MER, WIL metrics
 - `sentence-transformers` - Semantic similarity
 - `numpy` - Statistical computations
@@ -234,6 +288,7 @@ Before considering the metric complete:
 - [ ] Class extends `BaseMetric`
 - [ ] `__init__` calls `super().__init__(name="<metric_name>")`
 - [ ] `compute()` returns `MetricResult` with `details` and `per_sample`
+- [ ] `create_comparison_chart()` generates a bar chart for report generation
 - [ ] Handles missing samples gracefully (skip if ID not in references)
 - [ ] Handles empty input (return sensible defaults)
 - [ ] Added to `METRIC_REGISTRY` in `src/metrics/__init__.py`
