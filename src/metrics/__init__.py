@@ -54,15 +54,9 @@ def generate_all_charts(
     """
     generated = []
     for name, metric_class in METRIC_REGISTRY.items():
-        if metric_class == LLMJudgeMetric:
-            # LLMJudgeMetric takes output_dir and returns list of paths
-            paths = metric_class.create_comparison_chart(runs_data, output_dir)
-            generated.extend(p.name for p in paths)
-        else:
-            # Other metrics take output_path and return bool
-            output_path = output_dir / f"{name}_comparison.png"
-            if metric_class.create_comparison_chart(runs_data, output_path):
-                generated.append(output_path.name)
+        paths = metric_class.create_comparison_chart(runs_data, output_dir)
+        generated.extend(p.name for p in paths)
+
     return generated
 
 

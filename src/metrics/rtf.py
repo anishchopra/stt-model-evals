@@ -96,16 +96,16 @@ class RTFMetric(BaseMetric):
     @staticmethod
     def create_comparison_chart(
         runs_data: list[dict[str, Any]],
-        output_path: Path,
-    ) -> bool:
+        output_dir: Path,
+    ) -> list[Path]:
         """Generate RTF comparison bar chart.
 
         Args:
             runs_data: List of run data dicts with "name" and "metrics" keys.
-            output_path: Path to save the chart image.
+            output_dir: Directory to save the chart image.
 
         Returns:
-            True if chart was created, False if not enough data.
+            List of paths to the generated chart images.
         """
         # Extract RTF data from runs
         names = []
@@ -117,7 +117,7 @@ class RTFMetric(BaseMetric):
                 rtf_values.append(run["metrics"]["rtf"]["mean"])
 
         if not names:
-            return False
+            return []
 
         # Create chart
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -140,7 +140,8 @@ class RTFMetric(BaseMetric):
         ax.set_ylim(0, max(rtf_values) * 1.15)
 
         plt.tight_layout()
-        plt.savefig(output_path, dpi=150, bbox_inches="tight")
+        path = output_dir / "rtf_comparison.png"
+        plt.savefig(path, dpi=150, bbox_inches="tight")
         plt.close()
 
-        return True
+        return [path]

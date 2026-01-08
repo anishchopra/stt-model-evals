@@ -64,20 +64,17 @@ class BaseMetric(ABC):
     @staticmethod
     def create_comparison_chart(
         runs_data: list[dict[str, Any]],
-        output_path: Path,
-    ) -> bool:
+        output_dir: Path,
+    ) -> list[Path]:
         """Generate a comparison chart for this metric across multiple runs.
 
         Args:
             runs_data: List of run data dicts, each containing:
                 - "name": Run name (str)
                 - "metrics": Dict of metric results from metrics.json
-            output_path: Path to save the chart image.
+            output_dir: Directory to save the chart image.
 
         Returns:
-            True if chart was created, False if not enough data.
+            List of paths to the generated chart images.
         """
         raise NotImplementedError("Subclasses should implement create_comparison_chart")
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name='{self.name}')"

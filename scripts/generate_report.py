@@ -9,8 +9,11 @@ Usage:
 import argparse
 import csv
 import json
+import math
 from datetime import datetime
 from pathlib import Path
+
+from PIL import Image
 
 from src.metrics import generate_all_charts
 
@@ -121,6 +124,62 @@ def save_summary_csv(runs_data: list[dict], output_path: Path) -> None:
         writer.writerows(rows)
 
 
+def create_combined_report(chart_files: list[str], output_dir: Path) -> Path | None:
+    """Combine all chart images into a single report.png.
+
+    Args:
+        chart_files: List of chart filenames in output_dir.
+        output_dir: Directory containing the charts.
+
+    Returns:
+        Path to report.png, or None if no charts to combine.
+    """
+    if not chart_files:
+        return None
+
+    # Load all images
+    images = []
+    for filename in chart_files:
+        img_path = output_dir / filename
+        if img_path.exists():
+            images.append(Image.open(img_path))
+
+    if not images:
+        return None
+
+    # Calculate grid layout (prefer 2 columns)
+    n_images = len(images)
+    n_cols = min(2, n_images)
+    n_rows = math.ceil(n_images / n_cols)
+
+    # Get max dimensions for uniform cell sizing
+    max_width = max(img.width for img in images)
+    max_height = max(img.height for img in images)
+
+    # Create combined image
+    combined_width = max_width * n_cols
+    combined_height = max_height * n_rows
+    combined = Image.new("RGB", (combined_width, combined_height), "white")
+
+    # Paste images into grid
+    for idx, img in enumerate(images):
+        row = idx // n_cols
+        col = idx % n_cols
+        x = col * max_width + (max_width - img.width) // 2
+        y = row * max_height + (max_height - img.height) // 2
+        combined.paste(img, (x, y))
+
+    # Save combined report
+    output_path = output_dir / "report.png"
+    combined.save(output_path, dpi=(150, 150))
+
+    # Close images
+    for img in images:
+        img.close()
+
+    return output_path
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate comparison reports for inference runs",
@@ -176,6 +235,12 @@ def main():
     for chart in generated_charts:
         print(f"    - {chart}")
 
+    # Create combined report image
+    print("  Creating combined report image...")
+    combined_report = create_combined_report(generated_charts, report_dir)
+    if combined_report:
+        print(f"    - {combined_report.name}")
+
     # Save summary CSV
     print("  Saving summary CSV...")
     save_summary_csv(runs_data, report_dir / "summary.csv")
@@ -198,6 +263,8 @@ def main():
         print(f"{name:<20} {wer_str:<10} {rtf_str:<10}")
 
     print(f"\nOutputs saved to: {report_dir}")
+    if combined_report:
+        print(f"  - {combined_report.name}")
     for chart in generated_charts:
         print(f"  - {chart}")
     print("  - summary.csv")

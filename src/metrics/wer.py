@@ -124,16 +124,16 @@ class WERMetric(BaseMetric):
     @staticmethod
     def create_comparison_chart(
         runs_data: list[dict[str, Any]],
-        output_path: Path,
-    ) -> bool:
+        output_dir: Path,
+    ) -> list[Path]:
         """Generate WER comparison bar chart.
 
         Args:
             runs_data: List of run data dicts with "name" and "metrics" keys.
-            output_path: Path to save the chart image.
+            output_dir: Directory to save the chart image.
 
         Returns:
-            True if chart was created, False if not enough data.
+            List of paths to the generated chart images.
         """
         # Extract WER data from runs
         names = []
@@ -145,7 +145,7 @@ class WERMetric(BaseMetric):
                 wer_values.append(run["metrics"]["wer"]["wer"] * 100)  # Convert to %
 
         if not names:
-            return False
+            return []
 
         # Create chart
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -168,7 +168,8 @@ class WERMetric(BaseMetric):
         ax.set_ylim(0, max(wer_values) * 1.15)  # Add headroom for labels
 
         plt.tight_layout()
-        plt.savefig(output_path, dpi=150, bbox_inches="tight")
+        path = output_dir / "wer_comparison.png"
+        plt.savefig(path, dpi=150, bbox_inches="tight")
         plt.close()
 
-        return True
+        return [path]
