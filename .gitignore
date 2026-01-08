@@ -12,3 +12,4 @@ wheels/
 data/
 outputs/
 .claude/settings.local.json
+.env

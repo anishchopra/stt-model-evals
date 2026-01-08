@@ -12,3 +12,4 @@ tqdm
 uvicorn
 matplotlib
 jiwer
+python-dotenv
